@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions
-from .models import (
+from theatre.models import (
     Actor,
     Genre,
     Play,
@@ -8,7 +8,7 @@ from .models import (
     Reservation,
     Ticket
 )
-from .serializers import (
+from theatre.serializers import (
     ActorSerializer,
     GenreSerializer,
     PlaySerializer,
