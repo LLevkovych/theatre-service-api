@@ -20,8 +20,14 @@ class Genre(models.Model):
 class Play(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
-    actors = models.ManyToManyField(Actor, related_name="plays")
-    genres = models.ManyToManyField(Genre, related_name="plays")
+    actors = models.ManyToManyField(
+        Actor,
+        related_name="plays"
+    )
+    genres = models.ManyToManyField(
+        Genre,
+        related_name="plays"
+    )
 
     def __str__(self):
         return self.title
@@ -38,15 +44,25 @@ class TheatreHall(models.Model):
 
 class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservations")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name="reservations"
+    )
 
     def __str__(self):
         return f"Reservation #{self.id} by {self.user}"
 
 
 class Performance(models.Model):
-    play = models.ForeignKey(Play, on_delete=models.CASCADE, related_name="performances")
-    theatre_hall = models.ForeignKey(TheatreHall, on_delete=models.CASCADE, related_name="performances")
+    play = models.ForeignKey(
+        Play, on_delete=models.CASCADE,
+        related_name="performances"
+    )
+    theatre_hall = models.ForeignKey(
+        TheatreHall,
+        on_delete=models.CASCADE,
+        related_name="performances"
+    )
     show_time = models.DateTimeField()
 
     def __str__(self):
@@ -56,8 +72,15 @@ class Performance(models.Model):
 class Ticket(models.Model):
     row = models.PositiveIntegerField()
     seat = models.PositiveIntegerField()
-    performance = models.ForeignKey(Performance, on_delete=models.CASCADE, related_name="tickets")
-    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="tickets")
+    performance = models.ForeignKey(
+        Performance,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
+    reservation = models.ForeignKey(
+        Reservation, on_delete=models.CASCADE,
+        related_name="tickets"
+    )
 
     class Meta:
         unique_together = ("performance", "row", "seat")
