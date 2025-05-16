@@ -1,5 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from theatre.models import (
     Actor,
@@ -26,8 +27,11 @@ class ActorViewSet(viewsets.ModelViewSet):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
     permission_classes = [IsAdminOrReadOnly]
-    filter_backends = [DjangoFilterBackend]
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = ["name", "birth_date"]
+    ordering_fields = ["name", "birth_date"]
+    search_fields = ["name"]
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -35,11 +39,20 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    filter_backends = [OrderingFilter, SearchFilter]
+    ordering_fields = ["name"]
+    search_fields = ["name"]
+
 
 class PlayViewSet(viewsets.ModelViewSet):
     queryset = Play.objects.all()
     serializer_class = PlaySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = ["genre__name", "year"]
+    ordering_fields = ["year", "title"]
+    search_fields = ["title", "description"]
 
 
 class TheatreHallViewSet(viewsets.ModelViewSet):
@@ -56,11 +69,16 @@ class TheatreHallViewSet(viewsets.ModelViewSet):
 class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.all()
     serializer_class = PerformanceSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = ["play__title", "date"]
+    ordering_fields = ["date", "play__title"]
+    search_fields = ["play__title"]
 
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
-            return [IsAdminUser()]
+            return [permissions.IsAdminUser()]
         return super().get_permissions()
 
 
