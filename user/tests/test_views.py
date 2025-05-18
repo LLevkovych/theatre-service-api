@@ -1,18 +1,22 @@
 import pytest
-from urllib.parse import quote
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from user.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from user.tokens import generate_email_confirmation_token, verify_email_confirmation_token
+from user.tokens import (
+    generate_email_confirmation_token,
+    verify_email_confirmation_token,
+)
 
 
 REGISTER_URL = reverse("user:register")
 PROFILE_URL = reverse("user:profile")
 CHANGE_PASSWORD_URL = reverse("user:change-password")
 LOGOUT_URL = reverse("user:logout")
-CONFIRM_EMAIL_URL = lambda token: reverse("user:verify-email", args=[token])
+CONFIRM_EMAIL_URL = lambda token: reverse(
+    "user:verify-email", args=[token]
+)
 
 
 @pytest.fixture
@@ -33,6 +37,7 @@ def create_user(db):
         data.update(kwargs)
         user = User.objects.create_user(**data)
         return user
+
     return make_user
 
 
@@ -148,7 +153,10 @@ class TestLogoutView:
 
 @pytest.mark.django_db
 class TestEmailConfirmation:
-    def test_email_confirmation_token_generation_and_verification(self, create_user):
+    def test_email_confirmation_token_generation_and_verification(
+            self,
+            create_user
+    ):
         user = create_user()
         token = generate_email_confirmation_token(user)
         assert token is not None

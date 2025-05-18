@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from user.serializers import (
     UserSerializer,
     RegisterSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
 )
 from user.models import User
 from user.tokens import EMAIL_CONFIRMATION_SALT
@@ -64,9 +64,12 @@ class ChangePasswordView(generics.UpdateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = self.get_object()
-        user.set_password(serializer.validated_data['new_password'])
+        user.set_password(serializer.validated_data["new_password"])
         user.save()
-        return Response({"detail": "Password updated successfully"}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Password updated successfully"},
+            status=status.HTTP_200_OK
+        )
 
 
 class LogoutView(APIView):
@@ -75,14 +78,20 @@ class LogoutView(APIView):
     def post(self, request):
         refresh_token = request.data.get("refresh")
         if refresh_token is None:
-            return Response({"detail": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Refresh token is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except TokenError:
-            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid token."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class VerifyEmailView(APIView):
@@ -90,25 +99,42 @@ class VerifyEmailView(APIView):
 
     def get(self, request, token):
         import logging
+
         logging.warning(f"Received token: {token}")
 
         token = urllib.parse.unquote(token)
         logging.warning(f"Decoded token: {token}")
 
         try:
-            data = loads(token, salt=EMAIL_CONFIRMATION_SALT, max_age=60 * 60 * 24)
+            data = loads(
+                token,
+                salt=EMAIL_CONFIRMATION_SALT,
+                max_age=60 * 60 * 24
+            )
             logging.warning(f"Loaded data: {data}")
 
             user_id = data.get("user_id")
             user = User.objects.get(pk=user_id)
             if user.is_email_verified:
-                return Response({"detail": "Email already confirmed."}, status=status.HTTP_200_OK)
+                return Response(
+                    {"detail": "Email already confirmed."},
+                    status=status.HTTP_200_OK
+                )
 
             user.is_email_verified = True
             user.save()
-            return Response({"detail": "Email confirmed successfully."}, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": "Email confirmed successfully."},
+                status=status.HTTP_200_OK
+            )
         except SignatureExpired:
-            return Response({"detail": "Confirmation link has expired."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Confirmation link has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except (BadSignature, User.DoesNotExist) as e:
             logging.warning(f"Verification failed: {e}")
-            return Response({"detail": "Invalid confirmation token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Invalid confirmation token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

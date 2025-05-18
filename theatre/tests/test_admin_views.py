@@ -7,7 +7,10 @@ from user.models import User
 
 @pytest.fixture
 def admin_client(db):
-    admin = User.objects.create_superuser(username="admin", password="Admin123!")
+    admin = User.objects.create_superuser(
+        username="admin",
+        password="Admin123!"
+    )
     client = APIClient()
     client.force_authenticate(admin)
     return client
@@ -17,23 +20,51 @@ def admin_client(db):
 @pytest.mark.parametrize(
     "model_name, create_data, update_data, url_name",
     [
-        ("actor", {"first_name": "Tom", "last_name": "Cruise"}, {"first_name": "New", "last_name": "Name"}, "theatre:actor"),
+        (
+            "actor",
+            {"first_name": "Tom", "last_name": "Cruise"},
+            {"first_name": "New", "last_name": "Name"},
+            "theatre:actor",
+        ),
         ("genre", {"name": "Drama"}, {"name": "Comedy"}, "theatre:genre"),
         (
             "play",
-            {"title": "Hamlet", "description": "Tragedy", "actor_ids": [], "genre_ids": []},
-            {"title": "Macbeth", "description": "Tragedy", "actor_ids": [], "genre_ids": []},
+            {
+                "title": "Hamlet",
+                "description": "Tragedy",
+                "actor_ids": [],
+                "genre_ids": [],
+            },
+            {
+                "title": "Macbeth",
+                "description": "Tragedy",
+                "actor_ids": [],
+                "genre_ids": [],
+            },
             "theatre:play",
         ),
-        ("theatrehall", {"name": "Main Hall", "rows": 10, "seats_in_row": 15}, {"name": "Secondary Hall", "rows": 5, "seats_in_row": 10}, "theatre:theatrehall"),
+        (
+            "theatrehall",
+            {"name": "Main Hall", "rows": 10, "seats_in_row": 15},
+            {"name": "Secondary Hall", "rows": 5, "seats_in_row": 10},
+            "theatre:theatrehall",
+        ),
     ],
 )
-def test_admin_crud_basic(admin_client, model_name, create_data, update_data, url_name):
+def test_admin_crud_basic(
+        admin_client,
+        model_name,
+        create_data,
+        update_data,
+        url_name
+):
     client = admin_client
 
     url_list = reverse(f"{url_name}-list")
     response = client.post(url_list, create_data, format="json")
-    assert response.status_code == status.HTTP_201_CREATED, f"Failed creating {model_name}: {response.data}"
+    assert (
+        response.status_code == status.HTTP_201_CREATED
+    ), f"Failed creating {model_name}: {response.data}"
     obj_id = response.data["id"]
 
     url_detail = reverse(f"{url_name}-detail", args=[obj_id])
@@ -48,7 +79,10 @@ def test_admin_crud_basic(admin_client, model_name, create_data, update_data, ur
 
     patch_key = list(update_data.keys())[0]
     patch_val = update_data[patch_key]
-    patch_data = {patch_key: patch_val + " PATCH" if isinstance(patch_val, str) else patch_val}
+    patch_data = {
+        patch_key: patch_val + " PATCH"
+        if isinstance(patch_val, str) else patch_val
+    }
     response = client.patch(url_detail, patch_data, format="json")
     assert response.status_code == status.HTTP_200_OK
     assert response.data[patch_key] == patch_data[patch_key]
@@ -60,19 +94,32 @@ def test_admin_crud_basic(admin_client, model_name, create_data, update_data, ur
 @pytest.mark.django_db
 def test_admin_performance_id_if_crud(admin_client):
     client = admin_client
-    genre = client.post(reverse("theatre:genre-list"), {"name": "Drama"}, format="json").data
-    actor = client.post(reverse("theatre:actor-list"), {"first_name": "Tom", "last_name": "Hanks"}, format="json").data
+    genre = client.post(
+        reverse("theatre:genre-list"), {"name": "Drama"}, format="json"
+    ).data
+    actor = client.post(
+        reverse("theatre:actor-list"),
+        {"first_name": "Tom", "last_name": "Hanks"},
+        format="json",
+    ).data
     play_data = {
         "title": "Hamlet",
         "description": "Tragedy",
         "actor_ids": [actor["id"]],
         "genre_ids": [genre["id"]],
     }
-    play_resp = client.post(reverse("theatre:play-list"), play_data, format="json")
+    play_resp = client.post(
+        reverse("theatre:play-list"),
+        play_data, format="json"
+    )
     assert play_resp.status_code == status.HTTP_201_CREATED
     play_id = play_resp.data["id"]
 
-    theatre_hall_resp = client.post(reverse("theatre:theatrehall-list"), {"name": "Main Hall", "rows": 10, "seats_in_row": 15}, format="json")
+    theatre_hall_resp = client.post(
+        reverse("theatre:theatrehall-list"),
+        {"name": "Main Hall", "rows": 10, "seats_in_row": 15},
+        format="json",
+    )
     assert theatre_hall_resp.status_code == status.HTTP_201_CREATED
     theatre_hall_id = theatre_hall_resp.data["id"]
 
@@ -107,8 +154,14 @@ def test_admin_performance_id_if_crud(admin_client):
 def test_admin_reservation_and_ticket_crud(admin_client):
     client = admin_client
 
-    genre = client.post(reverse("theatre:genre-list"), {"name": "Drama"}, format="json").data
-    actor = client.post(reverse("theatre:actor-list"), {"first_name": "Tom", "last_name": "Hanks"}, format="json").data
+    genre = client.post(
+        reverse("theatre:genre-list"), {"name": "Drama"}, format="json"
+    ).data
+    actor = client.post(
+        reverse("theatre:actor-list"),
+        {"first_name": "Tom", "last_name": "Hanks"},
+        format="json",
+    ).data
     play = client.post(
         reverse("theatre:play-list"),
         {
@@ -138,15 +191,10 @@ def test_admin_reservation_and_ticket_crud(admin_client):
 
     reservation_resp = client.post(
         reverse("theatre:reservation-list"),
-        {
-            "tickets": [
-                {
-                    "performance_id": performance["id"],
-                    "row": 1,
-                    "seat": 1
-                }
-            ]
-        },
+        {"tickets": [
+                 {"performance_id": performance["id"],
+                  "row": 1, "seat": 1}
+             ]},
         format="json",
     )
     assert reservation_resp.status_code == status.HTTP_201_CREATED
@@ -155,7 +203,9 @@ def test_admin_reservation_and_ticket_crud(admin_client):
     ticket = reservation["tickets_info"][0]
     ticket_id = ticket["id"]
 
-    reservation_detail_url = reverse("theatre:reservation-detail", args=[reservation_id])
+    reservation_detail_url = reverse(
+        "theatre:reservation-detail", args=[reservation_id]
+    )
     resp = client.get(reservation_detail_url)
     assert resp.status_code == status.HTTP_200_OK
 
@@ -177,8 +227,16 @@ def test_admin_reservation_and_ticket_crud(admin_client):
     [
         ("theatre:actor-list", {"first_name": "", "last_name": ""}),
         ("theatre:genre-list", {"name": ""}),
-        ("theatre:play-list", {"title": "", "description": "", "actor_ids": [], "genre_ids": []}),
-        ("theatre:theatrehall-list", {"name": "", "rows": -1, "seats_in_row": -1}),
+        (
+            "theatre:play-list",
+            {"title": "", "description": "", "actor_ids": [], "genre_ids": []},
+        ),
+        ("theatre:theatrehall-list",
+         {"name": "",
+          "rows": -1,
+          "seats_in_row": -1
+          }
+         ),
     ],
 )
 def test_admin_invalid_data(admin_client, url_name, invalid_data):

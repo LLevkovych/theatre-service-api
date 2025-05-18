@@ -1,6 +1,10 @@
 import pytest
 from theatre.models import Actor, Genre, Play
-from theatre.serializers import ActorSerializer, GenreSerializer, PlaySerializer
+from theatre.serializers import (
+    ActorSerializer,
+    GenreSerializer,
+    PlaySerializer
+)
 
 
 @pytest.mark.django_db
@@ -38,7 +42,10 @@ def test_genre_serializer_validation_error():
 @pytest.mark.django_db
 def test_play_serializer():
     genre = Genre.objects.create(name="Comedy")
-    play = Play.objects.create(title="Funny Show", description="A very funny play")
+    play = Play.objects.create(
+        title="Funny Show",
+        description="A very funny play"
+    )
     play.genres.add(genre)
     data = PlaySerializer(play).data
     assert data["title"] == "Funny Show"

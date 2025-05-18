@@ -1,7 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 
 from theatre.models import (
     Actor, Genre, Play, TheatreHall,
@@ -74,10 +75,6 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework import viewsets, permissions
-
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
@@ -95,11 +92,16 @@ class ReservationViewSet(viewsets.ModelViewSet):
         return context
 
     def update(self, request, *args, **kwargs):
-        return Response({"detail": "Updating reservations is not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(
+            {"detail": "Updating reservations is not allowed."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
     def partial_update(self, request, *args, **kwargs):
-        return Response({"detail": "Partial updating reservations is not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
+        return Response(
+            {"detail": "Partial updating reservations is not allowed."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
 
 class TicketViewSet(viewsets.ModelViewSet):

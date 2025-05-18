@@ -9,30 +9,49 @@ from theatre.models import (
     Ticket
 )
 
+
 class ActorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Actor
         fields = ["id", "first_name", "last_name"]
+
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ["id", "name"]
 
+
 class PlaySerializer(serializers.ModelSerializer):
     actors = ActorSerializer(many=True, read_only=True)
     genres = GenreSerializer(many=True, read_only=True)
 
     actor_ids = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Actor.objects.all(), source="actors", write_only=True, required=False
+        many=True,
+        queryset=Actor.objects.all(),
+        source="actors",
+        write_only=True,
+        required=False
     )
     genre_ids = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Genre.objects.all(), source="genres", write_only=True, required=False
+        many=True,
+        queryset=Genre.objects.all(),
+        source="genres",
+        write_only=True,
+        required=False
     )
 
     class Meta:
         model = Play
-        fields = ["id", "title", "description", "actors", "genres", "actor_ids", "genre_ids"]
+        fields = [
+            "id",
+            "title",
+            "description",
+            "actors",
+            "genres",
+            "actor_ids",
+            "genre_ids"
+        ]
 
     def create(self, validated_data):
         actors = validated_data.pop("actors", [])
@@ -69,28 +88,49 @@ class PerformanceSerializer(serializers.ModelSerializer):
         queryset=Play.objects.all(), source="play", write_only=True
     )
     theatre_hall_id = serializers.PrimaryKeyRelatedField(
-        queryset=TheatreHall.objects.all(), source="theatre_hall", write_only=True
+        queryset=TheatreHall.objects.all(),
+        source="theatre_hall",
+        write_only=True
     )
 
     class Meta:
         model = Performance
-        fields = ["id", "play", "theatre_hall", "show_time", "play_id", "theatre_hall_id"]
+        fields = [
+            "id",
+            "play",
+            "theatre_hall",
+            "show_time",
+            "play_id",
+            "theatre_hall_id"
+        ]
 
 
 class TicketSerializer(serializers.ModelSerializer):
     performance = PerformanceSerializer(read_only=True)
     performance_id = serializers.PrimaryKeyRelatedField(
-        queryset=Performance.objects.all(), source="performance", write_only=True
+        queryset=Performance.objects.all(),
+        source="performance",
+        write_only=True
     )
 
     reservation = serializers.PrimaryKeyRelatedField(read_only=True)
     reservation_id = serializers.PrimaryKeyRelatedField(
-        queryset=Reservation.objects.all(), source="reservation", write_only=True
+        queryset=Reservation.objects.all(),
+        source="reservation",
+        write_only=True
     )
 
     class Meta:
         model = Ticket
-        fields = ["id", "performance", "performance_id", "row", "seat", "reservation", "reservation_id"]
+        fields = [
+            "id",
+            "performance",
+            "performance_id",
+            "row",
+            "seat",
+            "reservation",
+            "reservation_id"
+        ]
 
 
 class TicketCreateSerializer(serializers.ModelSerializer):
@@ -105,8 +145,15 @@ class TicketCreateSerializer(serializers.ModelSerializer):
 
 
 class ReservationSerializer(serializers.ModelSerializer):
-    tickets = TicketCreateSerializer(many=True, write_only=True)
-    tickets_info = TicketSerializer(many=True, read_only=True, source="tickets")
+    tickets = TicketCreateSerializer(
+        many=True,
+        write_only=True
+    )
+    tickets_info = TicketSerializer(
+        many=True,
+        read_only=True,
+        source="tickets"
+    )
 
     class Meta:
         model = Reservation
@@ -115,7 +162,9 @@ class ReservationSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         tickets_data = attrs.get("tickets", [])
         if not tickets_data:
-            raise serializers.ValidationError({"tickets": "At least one ticket must be provided."})
+            raise serializers.ValidationError(
+                {"tickets": "At least one ticket must be provided."}
+            )
 
         performance_ids = set()
         checked_seats = set()

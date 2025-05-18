@@ -23,11 +23,7 @@ def test_user(db):
     ],
 )
 def test_change_password_serializer(
-        test_user,
-        old_password,
-        new_password,
-        expected_valid,
-        expected_error_field
+    test_user, old_password, new_password, expected_valid, expected_error_field
 ):
     factory = APIRequestFactory()
     request = factory.put("/")

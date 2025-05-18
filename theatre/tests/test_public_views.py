@@ -4,9 +4,11 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from theatre.models import Actor, Genre, Play
 
+
 @pytest.fixture
 def api_client():
     return APIClient()
+
 
 @pytest.mark.django_db
 def test_list_actors(api_client):
@@ -20,6 +22,7 @@ def test_list_actors(api_client):
     assert "John" in first_names
     assert "Jane" in first_names
 
+
 @pytest.mark.django_db
 def test_list_actors_empty(api_client):
     url = reverse("theatre:actor-list")
@@ -27,6 +30,7 @@ def test_list_actors_empty(api_client):
     assert response.status_code == status.HTTP_200_OK
     assert response.data["count"] == 0
     assert response.data["results"] == []
+
 
 @pytest.mark.django_db
 def test_list_genres(api_client):
@@ -39,6 +43,7 @@ def test_list_genres(api_client):
     genre_names = [genre["name"] for genre in response.data["results"]]
     assert "Drama" in genre_names
     assert "Comedy" in genre_names
+
 
 @pytest.mark.django_db
 def test_list_plays(api_client):
@@ -54,6 +59,7 @@ def test_list_plays(api_client):
         genres = response.data["results"][0]["genres"]
         genre_names = [g["name"] for g in genres]
         assert "Drama" in genre_names
+
 
 @pytest.mark.django_db
 def test_list_plays_empty(api_client):

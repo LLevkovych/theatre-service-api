@@ -10,7 +10,11 @@ from user.models import User
 
 @pytest.fixture
 def theatre_hall(db):
-    return TheatreHall.objects.create(name="Main Hall", rows=10, seats_in_row=15)
+    return TheatreHall.objects.create(
+        name="Main Hall",
+        rows=10,
+        seats_in_row=15
+    )
 
 
 @pytest.fixture
@@ -21,7 +25,11 @@ def play(db):
 @pytest.fixture
 def performance(db, play, theatre_hall):
     show_time = timezone.now() + datetime.timedelta(days=1)
-    return Performance.objects.create(play=play, theatre_hall=theatre_hall, show_time=show_time)
+    return Performance.objects.create(
+        play=play,
+        theatre_hall=theatre_hall,
+        show_time=show_time
+    )
 
 
 @pytest.fixture
@@ -66,7 +74,12 @@ def test_cannot_double_book_same_seat(performance, user_client):
     client, user = user_client
 
     reservation = Reservation.objects.create(user=user)
-    Ticket.objects.create(row=1, seat=1, performance=performance, reservation=reservation)
+    Ticket.objects.create(
+        row=1,
+        seat=1,
+        performance=performance,
+        reservation=reservation
+    )
 
     url = reverse("theatre:reservation-list")
     data = {
@@ -77,7 +90,9 @@ def test_cannot_double_book_same_seat(performance, user_client):
     response = client.post(url, data, format="json")
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "already" in str(response.data).lower() or "unique" in str(response.data).lower()
+    assert ("already" in str(response.data).lower()
+            or "unique" in str(response.data).lower()
+            )
 
 
 @pytest.mark.django_db
@@ -87,7 +102,10 @@ def test_cannot_book_ticket_outside_hall_range(theatre_hall, user_client):
     theatre_hall.seats_in_row = 10
     theatre_hall.save()
 
-    play = Play.objects.create(title="Test Play", description="Test Description")
+    play = Play.objects.create(
+        title="Test Play",
+        description="Test Description"
+    )
 
     performance = Performance.objects.create(
         play=play,

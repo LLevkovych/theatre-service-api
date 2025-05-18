@@ -1,0 +1,32 @@
+[
+  {
+    "model": "theatre.actor",
+    "pk": 1,
+    "fields": {
+      "first_name": "John",
+      "last_name": "Doe"
+    }
+  },
+  {
+    "model": "theatre.actor",
+    "pk": 2,
+    "fields": {
+      "first_name": "Jane",
+      "last_name": "Smith"
+    }
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 1,
+    "fields": {
+      "name": "Drama"
+    }
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 2,
+    "fields": {
+      "name": "Comedy"
+    }
+  }
+]

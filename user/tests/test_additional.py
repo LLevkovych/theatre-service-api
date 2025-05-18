@@ -23,10 +23,11 @@ def create_user(db):
             "email": "test@example.com",
             "password": "StrongPass123!",
             "first_name": "Test",
-            "last_name": "User"
+            "last_name": "User",
         }
         data.update(kwargs)
         return User.objects.create_user(**data)
+
     return make_user
 
 
@@ -38,7 +39,7 @@ def authenticated_client(db, create_user):
             "email": "testuser@example.com",
             "password": "StrongPass123!",
             "first_name": "Test",
-            "last_name": "User"
+            "last_name": "User",
         }
         user_data.update(user_kwargs)
         user = create_user(**user_data)
@@ -46,10 +47,12 @@ def authenticated_client(db, create_user):
         client = APIClient()
         login_data = {
             "username": user_data["username"],
-            "password": user_data["password"]
+            "password": user_data["password"],
         }
         response = client.post(LOGIN_URL, login_data, format="json")
-        assert response.status_code == status.HTTP_200_OK, f"Login failed: {response.data}"
+        assert (
+            response.status_code == status.HTTP_200_OK
+        ), f"Login failed: {response.data}"
 
         token = response.data["access"]
         client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -67,7 +70,7 @@ class TestRegisterValidation:
             "username": "existinguser",
             "email": "unique@example.com",
             "password": "StrongPass123!",
-            "password2": "StrongPass123!"
+            "password2": "StrongPass123!",
         }
         response = api_client.post(REGISTER_URL, data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -79,7 +82,7 @@ class TestRegisterValidation:
             "username": "newuser",
             "email": "existing@example.com",
             "password": "StrongPass123!",
-            "password2": "StrongPass123!"
+            "password2": "StrongPass123!",
         }
         response = api_client.post(REGISTER_URL, data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -90,7 +93,7 @@ class TestRegisterValidation:
             "username": "newuser",
             "email": "new@example.com",
             "password": "123",
-            "password2": "123"
+            "password2": "123",
         }
         response = api_client.post(REGISTER_URL, data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -101,9 +104,7 @@ class TestRegisterValidation:
 class TestProfileUpdateValidation:
     def test_update_profile_invalid_email(self, authenticated_client):
         client, user = authenticated_client()
-        payload = {
-            "email": "invalid-email-format"
-        }
+        payload = {"email": "invalid-email-format"}
         response = client.patch(PROFILE_URL, payload, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "email" in response.data
@@ -140,10 +141,7 @@ class TestAuthentication:
 
     def test_login_wrong_password(self, api_client, create_user):
         create_user(username="loginuser", password="LoginPass123!")
-        data = {
-            "username": "loginuser",
-            "password": "WrongPass!"
-        }
+        data = {"username": "loginuser", "password": "WrongPass!"}
         response = api_client.post(LOGIN_URL, data)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -155,8 +153,6 @@ class TestAccessControl:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_unauthenticated_cannot_update_profile(self, api_client):
-        payload = {
-            "first_name": "Hacker"
-        }
+        payload = {"first_name": "Hacker"}
         response = api_client.patch(PROFILE_URL, payload)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
