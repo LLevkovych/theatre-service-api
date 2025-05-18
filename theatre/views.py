@@ -2,14 +2,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
+
 from theatre.models import (
-    Actor,
-    Genre,
-    Play,
-    TheatreHall,
-    Performance,
-    Reservation,
-    Ticket
+    Actor, Genre, Play, TheatreHall,
+    Performance, Reservation, Ticket
 )
 from theatre.permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
 from theatre.serializers import (
@@ -19,7 +15,7 @@ from theatre.serializers import (
     TheatreHallSerializer,
     PerformanceSerializer,
     ReservationSerializer,
-    TicketSerializer,
+    TicketSerializer
 )
 
 
@@ -27,18 +23,16 @@ class ActorViewSet(viewsets.ModelViewSet):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
     permission_classes = [IsAdminOrReadOnly]
-
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
-    filterset_fields = ["name", "birth_date"]
-    ordering_fields = ["name", "birth_date"]
-    search_fields = ["name"]
+    filterset_fields = ["first_name", "last_name"]
+    ordering_fields = ["first_name", "last_name"]
+    search_fields = ["first_name", "last_name"]
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["name"]
     search_fields = ["name"]
@@ -47,11 +41,10 @@ class GenreViewSet(viewsets.ModelViewSet):
 class PlayViewSet(viewsets.ModelViewSet):
     queryset = Play.objects.all()
     serializer_class = PlaySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
-    filterset_fields = ["genre__name", "year"]
-    ordering_fields = ["year", "title"]
+    filterset_fields = ["genres__name"]
+    ordering_fields = ["title"]
     search_fields = ["title", "description"]
 
 
@@ -69,34 +62,25 @@ class TheatreHallViewSet(viewsets.ModelViewSet):
 class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.all()
     serializer_class = PerformanceSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
-    filterset_fields = ["play__title", "date"]
-    ordering_fields = ["date", "play__title"]
+    filterset_fields = ["play__title", "show_time"]
+    ordering_fields = ["show_time", "play__title"]
     search_fields = ["play__title"]
 
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
-            return [permissions.IsAdminUser()]
+            return [IsAdminUser()]
         return super().get_permissions()
 
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework import viewsets, permissions
 
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
-
-    def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-
-class TicketViewSet(viewsets.ModelViewSet):
-    queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def get_queryset(self):
@@ -105,5 +89,31 @@ class TicketViewSet(viewsets.ModelViewSet):
             return self.queryset
         return self.queryset.filter(user=user)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
+    def update(self, request, *args, **kwargs):
+        return Response({"detail": "Updating reservations is not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        return Response({"detail": "Partial updating reservations is not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
+class TicketViewSet(viewsets.ModelViewSet):
+    queryset = Ticket.objects.select_related("reservation", "performance")
+    serializer_class = TicketSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return self.queryset
+        return self.queryset.filter(reservation__user=user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context

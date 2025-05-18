@@ -25,11 +25,13 @@ urlpatterns = [
     ),
     path(
         "api/v1/theatre/",
-        include("theatre.urls")
+        include(("theatre.urls", "theatre"),
+        namespace="theatre")
     ),
     path(
         "api/v1/user/",
-        include("user.urls")
+        include(("user.urls", "user"),
+        namespace="user")
     ),
     path(
         "api/v1/token/",

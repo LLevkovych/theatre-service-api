@@ -10,11 +10,13 @@ from theatre.views import (
     TicketViewSet,
 )
 
+app_name = "theatre"
+
 router = DefaultRouter()
 router.register(r"actors", ActorViewSet)
 router.register(r"genres", GenreViewSet)
 router.register(r"plays", PlayViewSet)
-router.register(r"theatre-halls", TheatreHallViewSet)
+router.register(r"theatrehalls", TheatreHallViewSet)
 router.register(r"performances", PerformanceViewSet)
 router.register(r"reservations", ReservationViewSet)
 router.register(r"tickets", TicketViewSet)

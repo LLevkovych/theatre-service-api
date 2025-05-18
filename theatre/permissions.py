@@ -16,4 +16,12 @@ class IsOwnerOrAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return obj.user == request.user or request.user.is_staff
+
+        if hasattr(obj, "user"):
+            owner = obj.user
+        elif hasattr(obj, "reservation") and hasattr(obj.reservation, "user"):
+            owner = obj.reservation.user
+        else:
+            return False
+
+        return owner == request.user or request.user.is_staff
