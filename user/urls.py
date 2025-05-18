@@ -6,6 +6,8 @@ from user.views import (
 )
 
 
+app_name = "user"
+
 urlpatterns = [
     path(
         "register/",
