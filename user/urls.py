@@ -2,7 +2,9 @@ from django.urls import path
 from user.views import (
     RegisterView,
     ProfileView,
-    ChangePasswordView, LogoutView
+    ChangePasswordView,
+    LogoutView,
+    VerifyEmailView
 )
 
 
@@ -29,4 +31,9 @@ urlpatterns = [
         LogoutView.as_view(),
         name="logout"
     ),
+    path("verify-email/",
+         VerifyEmailView.as_view(),
+         name="verify-email"
+         ),
+
 ]

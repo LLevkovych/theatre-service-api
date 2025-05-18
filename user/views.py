@@ -4,18 +4,25 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from user.emails import send_verification_email
 from user.serializers import (
     UserSerializer,
     RegisterSerializer,
     ChangePasswordSerializer
 )
 from user.models import User
+from user.utils import generate_email_verification_token, verify_email_verification_token
 
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        token = generate_email_verification_token(user)
+        send_verification_email(user, token)
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
@@ -57,3 +64,29 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except TokenError:
             return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyEmailView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        token = request.query_params.get("token")
+        if not token:
+            return Response({"detail": "Token is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_id, email = verify_email_verification_token(token)
+        if not user_id:
+            return Response({"detail": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(pk=user_id, email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_email_verified:
+            return Response({"detail": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_email_verified = True
+        user.save()
+
+        return Response({"detail": "Email verified successfully"})
