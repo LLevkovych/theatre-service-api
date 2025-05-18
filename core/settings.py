@@ -144,3 +144,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
 }
+
+DEFAULT_FROM_EMAIL = "your-email@example.com"
+FRONTEND_URL = "http://localhost:8000"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

@@ -31,9 +31,10 @@ urlpatterns = [
         LogoutView.as_view(),
         name="logout"
     ),
-    path("verify-email/",
-         VerifyEmailView.as_view(),
-         name="verify-email"
-         ),
+    path(
+        "verify-email/<str:token>/",
+        VerifyEmailView.as_view(),
+        name="verify-email"
+    ),
 
 ]

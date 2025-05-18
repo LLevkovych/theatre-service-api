@@ -1,13 +1,18 @@
 import pytest
+from urllib.parse import quote
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from user.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+from user.tokens import generate_email_confirmation_token, verify_email_confirmation_token
+
 
 REGISTER_URL = reverse("user:register")
 PROFILE_URL = reverse("user:profile")
 CHANGE_PASSWORD_URL = reverse("user:change-password")
 LOGOUT_URL = reverse("user:logout")
+CONFIRM_EMAIL_URL = lambda token: reverse("user:verify-email", args=[token])
 
 
 @pytest.fixture
@@ -23,10 +28,11 @@ def create_user(db):
             "email": "test@example.com",
             "password": "StrongPass123!",
             "first_name": "Test",
-            "last_name": "User"
+            "last_name": "User",
         }
         data.update(kwargs)
-        return User.objects.create_user(**data)
+        user = User.objects.create_user(**data)
+        return user
     return make_user
 
 
@@ -46,7 +52,7 @@ class TestRegisterView:
             "first_name": "New",
             "last_name": "User",
             "password": "StrongPass123!",
-            "password2": "StrongPass123!"
+            "password2": "StrongPass123!",
         }
         response = api_client.post(REGISTER_URL, data)
         assert response.status_code == status.HTTP_201_CREATED
@@ -57,7 +63,7 @@ class TestRegisterView:
             "username": "newuser",
             "email": "new@example.com",
             "password": "12345678",
-            "password2": "87654321"
+            "password2": "87654321",
         }
         response = api_client.post(REGISTER_URL, data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -80,7 +86,7 @@ class TestProfileView:
         client, user = authenticated_client
         payload = {
             "first_name": "Updated",
-            "last_name": "Name"
+            "last_name": "Name",
         }
         response = client.patch(PROFILE_URL, payload)
         user.refresh_from_db()
@@ -95,7 +101,7 @@ class TestChangePasswordView:
         client, user = authenticated_client
         payload = {
             "old_password": "StrongPass123!",
-            "new_password": "NewStrongPass456!"
+            "new_password": "NewStrongPass456!",
         }
         response = client.put(CHANGE_PASSWORD_URL, payload)
         assert response.status_code == status.HTTP_200_OK
@@ -106,7 +112,7 @@ class TestChangePasswordView:
         client, _ = authenticated_client
         payload = {
             "old_password": "WrongOldPass",
-            "new_password": "NewStrongPass456!"
+            "new_password": "NewStrongPass456!",
         }
         response = client.put(CHANGE_PASSWORD_URL, payload)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -115,7 +121,7 @@ class TestChangePasswordView:
     def test_change_password_unauthenticated(self, api_client):
         payload = {
             "old_password": "StrongPass123!",
-            "new_password": "NewStrongPass456!"
+            "new_password": "NewStrongPass456!",
         }
         response = api_client.put(CHANGE_PASSWORD_URL, payload)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -125,8 +131,6 @@ class TestChangePasswordView:
 class TestLogoutView:
     def test_logout_success(self, authenticated_client):
         client, user = authenticated_client
-        from rest_framework_simplejwt.tokens import RefreshToken
-
         refresh = RefreshToken.for_user(user)
         response = client.post(LOGOUT_URL, {"refresh": str(refresh)})
         assert response.status_code == status.HTTP_205_RESET_CONTENT
@@ -139,4 +143,29 @@ class TestLogoutView:
     def test_logout_invalid_token(self, authenticated_client):
         client, _ = authenticated_client
         response = client.post(LOGOUT_URL, {"refresh": "invalidtoken"})
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+class TestEmailConfirmation:
+    def test_email_confirmation_token_generation_and_verification(self, create_user):
+        user = create_user()
+        token = generate_email_confirmation_token(user)
+        assert token is not None
+
+        verified_user = verify_email_confirmation_token(token)
+        assert verified_user == user
+
+    def test_confirm_email_view_success(self, api_client, create_user):
+        user = create_user()
+        token = generate_email_confirmation_token(user)
+        url = reverse("user:verify-email", args=[token])
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        user.refresh_from_db()
+        assert user.is_email_verified is True
+
+    def test_confirm_email_view_invalid_token(self, api_client):
+        url = CONFIRM_EMAIL_URL("invalidtoken123")
+        response = api_client.get(url)
         assert response.status_code == status.HTTP_400_BAD_REQUEST

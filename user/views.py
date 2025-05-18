@@ -1,17 +1,26 @@
+import urllib
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.core.signing import BadSignature, SignatureExpired, loads, dumps
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from user.emails import send_verification_email
 from user.serializers import (
     UserSerializer,
     RegisterSerializer,
     ChangePasswordSerializer
 )
 from user.models import User
-from user.utils import generate_email_verification_token, verify_email_verification_token
+from user.tokens import EMAIL_CONFIRMATION_SALT
+
+
+def generate_email_confirmation_token(user):
+    data = {"user_id": user.pk}
+    token = dumps(data)
+    return token
 
 
 class RegisterView(generics.CreateAPIView):
@@ -21,8 +30,18 @@ class RegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        token = generate_email_verification_token(user)
-        send_verification_email(user, token)
+        token = generate_email_confirmation_token(user)
+        encoded_token = urllib.parse.quote(token)
+        confirm_url = f"{settings.FRONTEND_URL}/verify-email/{encoded_token}/"
+        subject = "Confirm your email"
+        message = f"Please confirm your email by clicking the link: {confirm_url}"
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
@@ -67,26 +86,29 @@ class LogoutView(APIView):
 
 
 class VerifyEmailView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = []
 
-    def get(self, request):
-        token = request.query_params.get("token")
-        if not token:
-            return Response({"detail": "Token is required"}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, token):
+        import logging
+        logging.warning(f"Received token: {token}")
 
-        user_id, email = verify_email_verification_token(token)
-        if not user_id:
-            return Response({"detail": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+        token = urllib.parse.unquote(token)
+        logging.warning(f"Decoded token: {token}")
 
         try:
-            user = User.objects.get(pk=user_id, email=email)
-        except User.DoesNotExist:
-            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            data = loads(token, salt=EMAIL_CONFIRMATION_SALT, max_age=60 * 60 * 24)
+            logging.warning(f"Loaded data: {data}")
 
-        if user.is_email_verified:
-            return Response({"detail": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
+            user_id = data.get("user_id")
+            user = User.objects.get(pk=user_id)
+            if user.is_email_verified:
+                return Response({"detail": "Email already confirmed."}, status=status.HTTP_200_OK)
 
-        user.is_email_verified = True
-        user.save()
-
-        return Response({"detail": "Email verified successfully"})
+            user.is_email_verified = True
+            user.save()
+            return Response({"detail": "Email confirmed successfully."}, status=status.HTTP_200_OK)
+        except SignatureExpired:
+            return Response({"detail": "Confirmation link has expired."}, status=status.HTTP_400_BAD_REQUEST)
+        except (BadSignature, User.DoesNotExist) as e:
+            logging.warning(f"Verification failed: {e}")
+            return Response({"detail": "Invalid confirmation token."}, status=status.HTTP_400_BAD_REQUEST)
