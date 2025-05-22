@@ -15,6 +15,15 @@ from user.serializers import (
 )
 from user.models import User
 from user.tokens import EMAIL_CONFIRMATION_SALT
+from drf_spectacular.utils import extend_schema
+from user.schemas import (
+    RegisterRequestSchema,
+    RegisterResponseSchema,
+    ChangePasswordRequestSchema,
+    ProfileResponseSchema,
+    LogoutRequestSchema,
+    VerifyEmailResponseSchema,
+)
 
 
 def generate_email_confirmation_token(user):
@@ -23,6 +32,11 @@ def generate_email_confirmation_token(user):
     return token
 
 
+
+@extend_schema(
+    request=RegisterRequestSchema,
+    responses={201: RegisterResponseSchema}
+)
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -44,6 +58,11 @@ class RegisterView(generics.CreateAPIView):
         )
 
 
+@extend_schema(
+    responses={200: ProfileResponseSchema},
+    summary="Get or update profile",
+    description="Authenticated user can retrieve or update their profile."
+)
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -52,6 +71,12 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+@extend_schema(
+    request=ChangePasswordRequestSchema,
+    responses={200: {"detail": "Password updated successfully"}},
+    summary="Change user password",
+    description="Authenticated user can change their password."
+)
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     model = User
@@ -72,6 +97,12 @@ class ChangePasswordView(generics.UpdateAPIView):
         )
 
 
+@extend_schema(
+    request=LogoutRequestSchema,
+    responses={205: None, 400: {"detail": "Invalid token."}},
+    summary="Logout user",
+    description="Blacklists the refresh token to log the user out."
+)
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -94,6 +125,11 @@ class LogoutView(APIView):
             )
 
 
+@extend_schema(
+    responses={200: VerifyEmailResponseSchema, 400: VerifyEmailResponseSchema},
+    summary="Verify email",
+    description="Confirms user's email using a signed token."
+)
 class VerifyEmailView(APIView):
     permission_classes = []
 

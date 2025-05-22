@@ -18,8 +18,18 @@ from theatre.serializers import (
     ReservationSerializer,
     TicketSerializer
 )
+from theatre.schemas import (
+    actor_schema,
+    genre_schema,
+    play_schema,
+    theatre_hall_schema,
+    performance_schema,
+    reservation_schema,
+    ticket_schema,
+)
 
 
+@actor_schema
 class ActorViewSet(viewsets.ModelViewSet):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
@@ -30,6 +40,7 @@ class ActorViewSet(viewsets.ModelViewSet):
     search_fields = ["first_name", "last_name"]
 
 
+@genre_schema
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -39,6 +50,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ["name"]
 
 
+@play_schema
 class PlayViewSet(viewsets.ModelViewSet):
     queryset = Play.objects.all()
     serializer_class = PlaySerializer
@@ -49,6 +61,7 @@ class PlayViewSet(viewsets.ModelViewSet):
     search_fields = ["title", "description"]
 
 
+@theatre_hall_schema
 class TheatreHallViewSet(viewsets.ModelViewSet):
     queryset = TheatreHall.objects.all()
     serializer_class = TheatreHallSerializer
@@ -60,6 +73,7 @@ class TheatreHallViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
+@performance_schema
 class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.all()
     serializer_class = PerformanceSerializer
@@ -75,6 +89,7 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
 
+@reservation_schema
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
@@ -104,6 +119,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
         )
 
 
+@ticket_schema
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.select_related("reservation", "performance")
     serializer_class = TicketSerializer

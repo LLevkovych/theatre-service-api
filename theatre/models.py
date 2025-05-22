@@ -1,5 +1,8 @@
 from django.db import models
-from user.models import User
+from core.settings import AUTH_USER_MODEL
+
+
+User = AUTH_USER_MODEL
 
 
 class Actor(models.Model):

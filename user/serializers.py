@@ -1,8 +1,10 @@
 from django.core.validators import validate_email as django_validate_email
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
-from django.contrib.auth import password_validation
-from user.models import User
+from django.contrib.auth import password_validation, get_user_model
+
+
+User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
