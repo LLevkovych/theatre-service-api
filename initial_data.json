@@ -1,0 +1,269 @@
+[
+  {
+    "model": "user.user",
+    "pk": 1,
+    "fields": {
+      "username": "alice",
+      "password": "pbkdf2_sha256$260000$abc$hash",
+      "is_email_verified": true,
+      "email": "alice@example.com",
+      "is_staff": false,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 2,
+    "fields": {
+      "username": "bob",
+      "password": "pbkdf2_sha256$260000$abc$hash",
+      "is_email_verified": false,
+      "email": "bob@example.com",
+      "is_staff": false,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 3,
+    "fields": {
+      "username": "carol",
+      "password": "pbkdf2_sha256$260000$abc$hash",
+      "is_email_verified": true,
+      "email": "carol@example.com",
+      "is_staff": false,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 4,
+    "fields": {
+      "username": "dave",
+      "password": "pbkdf2_sha256$260000$abc$hash",
+      "is_email_verified": false,
+      "email": "dave@example.com",
+      "is_staff": false,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 5,
+    "fields": {
+      "username": "eve",
+      "password": "pbkdf2_sha256$260000$abc$hash",
+      "is_email_verified": true,
+      "email": "eve@example.com",
+      "is_staff": false,
+      "is_superuser": false
+    }
+  },
+
+  {
+    "model": "theatre.actor",
+    "pk": 1,
+    "fields": {"first_name": "Leonard", "last_name": "DiCaprio"}
+  },
+  {
+    "model": "theatre.actor",
+    "pk": 2,
+    "fields": {"first_name": "Natalie", "last_name": "Portman"}
+  },
+  {
+    "model": "theatre.actor",
+    "pk": 3,
+    "fields": {"first_name": "Tom", "last_name": "Hanks"}
+  },
+  {
+    "model": "theatre.actor",
+    "pk": 4,
+    "fields": {"first_name": "Meryl", "last_name": "Streep"}
+  },
+  {
+    "model": "theatre.actor",
+    "pk": 5,
+    "fields": {"first_name": "Denzel", "last_name": "Washington"}
+  },
+
+  {
+    "model": "theatre.genre",
+    "pk": 1,
+    "fields": {"name": "Drama"}
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 2,
+    "fields": {"name": "Comedy"}
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 3,
+    "fields": {"name": "Tragedy"}
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 4,
+    "fields": {"name": "Musical"}
+  },
+  {
+    "model": "theatre.genre",
+    "pk": 5,
+    "fields": {"name": "Romance"}
+  },
+
+  {
+    "model": "theatre.play",
+    "pk": 1,
+    "fields": {
+      "title": "Hamlet",
+      "description": "A tragedy by Shakespeare",
+      "actors": [1, 4],
+      "genres": [1, 3]
+    }
+  },
+  {
+    "model": "theatre.play",
+    "pk": 2,
+    "fields": {
+      "title": "The Comedy of Errors",
+      "description": "A comedy by Shakespeare",
+      "actors": [2, 3],
+      "genres": [2]
+    }
+  },
+  {
+    "model": "theatre.play",
+    "pk": 3,
+    "fields": {
+      "title": "Les Misérables",
+      "description": "A musical drama",
+      "actors": [4, 5],
+      "genres": [1, 4]
+    }
+  },
+  {
+    "model": "theatre.play",
+    "pk": 4,
+    "fields": {
+      "title": "Romeo and Juliet",
+      "description": "A romantic tragedy",
+      "actors": [1, 2],
+      "genres": [3, 5]
+    }
+  },
+  {
+    "model": "theatre.play",
+    "pk": 5,
+    "fields": {
+      "title": "A Midsummer Night's Dream",
+      "description": "A comedy with romance",
+      "actors": [3, 5],
+      "genres": [2, 5]
+    }
+  },
+
+  {
+    "model": "theatre.theatrehall",
+    "pk": 1,
+    "fields": {"name": "Main Hall", "rows": 15, "seats_in_row": 20}
+  },
+  {
+    "model": "theatre.theatrehall",
+    "pk": 2,
+    "fields": {"name": "Small Hall", "rows": 10, "seats_in_row": 15}
+  },
+  {
+    "model": "theatre.theatrehall",
+    "pk": 3,
+    "fields": {"name": "Open Air", "rows": 20, "seats_in_row": 30}
+  },
+  {
+    "model": "theatre.theatrehall",
+    "pk": 4,
+    "fields": {"name": "Black Box", "rows": 8, "seats_in_row": 10}
+  },
+  {
+    "model": "theatre.theatrehall",
+    "pk": 5,
+    "fields": {"name": "Grand Theatre", "rows": 25, "seats_in_row": 40}
+  },
+
+  {
+    "model": "theatre.reservation",
+    "pk": 1,
+    "fields": {"user": 1, "created_at": "2025-05-21T10:00:00Z"}
+  },
+  {
+    "model": "theatre.reservation",
+    "pk": 2,
+    "fields": {"user": 2, "created_at": "2025-05-21T11:00:00Z"}
+  },
+  {
+    "model": "theatre.reservation",
+    "pk": 3,
+    "fields": {"user": 3, "created_at": "2025-05-21T12:00:00Z"}
+  },
+  {
+    "model": "theatre.reservation",
+    "pk": 4,
+    "fields": {"user": 4, "created_at": "2025-05-21T13:00:00Z"}
+  },
+  {
+    "model": "theatre.reservation",
+    "pk": 5,
+    "fields": {"user": 5, "created_at": "2025-05-21T14:00:00Z"}
+  },
+
+  {
+    "model": "theatre.performance",
+    "pk": 1,
+    "fields": {"play": 1, "theatre_hall": 1, "show_time": "2025-06-01T19:00:00Z"}
+  },
+  {
+    "model": "theatre.performance",
+    "pk": 2,
+    "fields": {"play": 2, "theatre_hall": 2, "show_time": "2025-06-02T20:00:00Z"}
+  },
+  {
+    "model": "theatre.performance",
+    "pk": 3,
+    "fields": {"play": 3, "theatre_hall": 3, "show_time": "2025-06-03T18:00:00Z"}
+  },
+  {
+    "model": "theatre.performance",
+    "pk": 4,
+    "fields": {"play": 4, "theatre_hall": 4, "show_time": "2025-06-04T19:30:00Z"}
+  },
+  {
+    "model": "theatre.performance",
+    "pk": 5,
+    "fields": {"play": 5, "theatre_hall": 5, "show_time": "2025-06-05T20:30:00Z"}
+  },
+
+  {
+    "model": "theatre.ticket",
+    "pk": 1,
+    "fields": {"row": 1, "seat": 1, "performance": 1, "reservation": 1}
+  },
+  {
+    "model": "theatre.ticket",
+    "pk": 2,
+    "fields": {"row": 1, "seat": 2, "performance": 1, "reservation": 1}
+  },
+  {
+    "model": "theatre.ticket",
+    "pk": 3,
+    "fields": {"row": 5, "seat": 10, "performance": 2, "reservation": 2}
+  },
+  {
+    "model": "theatre.ticket",
+    "pk": 4,
+    "fields": {"row": 3, "seat": 4, "performance": 3, "reservation": 3}
+  },
+  {
+    "model": "theatre.ticket",
+    "pk": 5,
+    "fields": {"row": 2, "seat": 6, "performance": 4, "reservation": 4}
+  }
+]
